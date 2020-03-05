@@ -17,8 +17,10 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.afollestad.appthemeengine.ATE;
+import com.afollestad.appthemeengine.Config;
 import com.google.android.material.tabs.TabLayout;
 import com.young.timber.R;
+import com.young.timber.utils.ATEUtils;
 import com.young.timber.utils.Helpers;
 import com.young.timber.utils.PreferencesUtility;
 
@@ -83,7 +85,13 @@ public class MainFragment extends Fragment {
     public void onResume() {
         super.onResume();
         String ateKey = Helpers.getATEKey(getActivity());
+        ATEUtils.setStatusBarColor(getActivity(),ateKey, Config.primaryColor(getActivity(),ateKey));
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     private void setupViewPager(ViewPager viewPager) {
