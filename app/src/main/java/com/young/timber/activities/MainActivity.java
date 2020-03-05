@@ -1,5 +1,6 @@
 package com.young.timber.activities;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,14 +14,18 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.anjlab.android.iab.v3.BillingProcessor;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.young.timber.R;
 import com.young.timber.fragments.FoldersFragment;
 import com.young.timber.fragments.MainFragment;
 import com.young.timber.fragments.PlaylistFragment;
 import com.young.timber.fragments.QueueFragment;
 import com.young.timber.permissions.PermissionCallback;
+import com.young.timber.permissions.Young;
 import com.young.timber.slidinguppanel.SlidingUpPanelLayout;
+import com.young.timber.utils.TimberUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -141,6 +146,27 @@ public class MainActivity extends BaseActivity {
                 setupNavigationIcons(navigationView);
             }
         }, 700);
+
+        if(TimberUtils.isMarshmallow()){
+            checkPermissionAndThenLoad();
+        }
+    }
+
+    private void checkPermissionAndThenLoad() {
+        if(Young.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)&&Young.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            loadEverything();
+        }else{
+            if(Young.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE)){
+                Snackbar.make(panelLayout,"Timber will need to read external storage to display songs on your device.",Snackbar.LENGTH_INDEFINITE)
+                        .setAction("OK", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                            }
+                        })
+                        .show();
+            }
+        }
     }
 
     private void setupNavigationIcons(NavigationView navigationView) {
@@ -163,7 +189,13 @@ public class MainActivity extends BaseActivity {
             navigationView.getMenu().findItem(R.id.nav_about).setIcon(R.drawable.information_white);
             navigationView.getMenu().findItem(R.id.nav_donate).setIcon(R.drawable.payment_white);
         }
-
+        try {
+            if (!BillingProcessor.isIabServiceAvailable(this)) {
+                navigationView.getMenu().removeItem(R.id.nav_donate);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -204,7 +236,7 @@ public class MainActivity extends BaseActivity {
                 public void run() {
                     runnable.run();
                 }
-            },350);
+            }, 350);
         }
     }
 
