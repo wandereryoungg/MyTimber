@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.anjlab.android.iab.v3.BillingProcessor;
@@ -147,24 +148,39 @@ public class MainActivity extends BaseActivity {
             }
         }, 700);
 
-        if(TimberUtils.isMarshmallow()){
+        if (TimberUtils.isMarshmallow()) {
             checkPermissionAndThenLoad();
+        }else{
+            loadEverything();
         }
+
+        addBackstackListener();
+    }
+
+    private void addBackstackListener() {
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                getSupportFragmentManager().findFragmentById(R.id.fragment_container).onResume();
+            }
+        });
     }
 
     private void checkPermissionAndThenLoad() {
-        if(Young.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)&&Young.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+        if (Young.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && Young.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             loadEverything();
-        }else{
-            if(Young.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE)){
-                Snackbar.make(panelLayout,"Timber will need to read external storage to display songs on your device.",Snackbar.LENGTH_INDEFINITE)
+        } else {
+            if (Young.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Snackbar.make(panelLayout, "Timber will need to read external storage to display songs on your device.", Snackbar.LENGTH_INDEFINITE)
                         .setAction("OK", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-
+                                Young.askForPermission(MainActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionReadstorageCallback);
                             }
                         })
                         .show();
+            }else{
+                Young.askForPermission(MainActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},permissionReadstorageCallback);
             }
         }
     }
