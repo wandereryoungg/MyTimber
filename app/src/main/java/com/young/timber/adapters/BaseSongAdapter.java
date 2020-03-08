@@ -2,10 +2,13 @@ package com.young.timber.adapters;
 
 import android.app.Activity;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.cast.framework.CastSession;
+import com.young.timber.activities.BaseActivity;
 import com.young.timber.models.Song;
 import com.young.timber.utils.TimberUtils;
 
@@ -34,7 +37,14 @@ public class BaseSongAdapter<V extends RecyclerView.ViewHolder> extends Recycler
 
     public void playAll(final Activity context, final long[] list, int position,
                         final long sourceId, final TimberUtils.IdType sourceType,
-                        final boolean forceShuffle, final Song currentSong, boolean navigateNowPlaying){
+                        final boolean forceShuffle, final Song currentSong, boolean navigateNowPlaying) {
+        if (context instanceof BaseActivity) {
+            CastSession castSession = ((BaseActivity) context).getCastSession();
+            if(castSession != null){
+                navigateNowPlaying = false;
+
+            }
+        }
 
     }
 

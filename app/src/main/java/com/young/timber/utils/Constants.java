@@ -12,6 +12,8 @@ public class Constants {
     public static final String NAVIGATE_NOWPLAYING = "navigate_nowplaying";
     public static final String NAVIGATE_LYRICS = "navigate_lyrics";
 
+    public static final int CAST_SERVER_PORT = 8080;
+
 
 
 
