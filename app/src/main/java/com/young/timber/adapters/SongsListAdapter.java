@@ -11,9 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.young.timber.R;
 import com.young.timber.models.Song;
 import com.young.timber.utils.Helpers;
+import com.young.timber.utils.TimberUtils;
 import com.young.timber.widgets.BubbleTextGetter;
 import com.young.timber.widgets.MusicVisualizer;
 
@@ -55,7 +58,16 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
 
     @Override
     public void onBindViewHolder(@NonNull ItemHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
+        Song localItem = arrayList.get(position);
+        holder.title.setText(localItem.title);
+        holder.artist.setText(localItem.artistName);
+
+        ImageLoader.getInstance().displayImage(TimberUtils.getAlbumArtUri(localItem.albumId).toString(),holder.albumArt,
+                new DisplayImageOptions.Builder().cacheInMemory(true).
+                showImageOnLoading(R.drawable.ic_empty_music2).
+                resetViewBeforeLoading(true).
+                build());
+
     }
 
     private long[] getSongIds() {
@@ -88,9 +100,17 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-
+                    playAll(mContext, songIDs, getAdapterPosition(), -1, TimberUtils.IdType.NA, false, arrayList.get(getAdapterPosition()), false);
+                    Handler handler1 = new Handler();
+                    handler1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyItemChanged(currentlyPlayingPosition);
+                            notifyItemChanged(getAdapterPosition());
+                        }
+                    }, 50);
                 }
-            },100);
+            }, 100);
 
         }
     }
