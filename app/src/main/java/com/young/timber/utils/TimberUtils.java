@@ -1,6 +1,5 @@
 package com.young.timber.utils;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -8,6 +7,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class TimberUtils {
 
@@ -60,6 +66,32 @@ public class TimberUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String getIPAddress(boolean useIPV4) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                ArrayList<InetAddress> addresses = Collections.list(intf.getInetAddresses());
+                for (InetAddress inetAddress : addresses) {
+                    String address = inetAddress.getHostAddress();
+                    boolean isIPV4 = address.indexOf(":") < 0;
+                    if (useIPV4) {
+                        if (isIPV4) {
+                            return address;
+                        } else if (!isIPV4) {
+                            int delim = address.indexOf("%");
+                            return delim < 0 ? address.toUpperCase() : address.substring(0, delim).toUpperCase();
+                        }
+                    }
+                }
+
+
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 }
