@@ -48,7 +48,7 @@ public class MusicVisualizer extends View {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 
-    private void setColor(int color) {
+    public void setColor(int color) {
         paint.setColor(color);
         invalidate();
     }

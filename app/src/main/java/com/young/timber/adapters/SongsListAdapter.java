@@ -1,5 +1,6 @@
 package com.young.timber.adapters;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.afollestad.appthemeengine.Config;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.young.timber.MusicPlayer;
 import com.young.timber.R;
 import com.young.timber.models.Song;
 import com.young.timber.utils.Helpers;
@@ -62,11 +65,28 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
         holder.title.setText(localItem.title);
         holder.artist.setText(localItem.artistName);
 
-        ImageLoader.getInstance().displayImage(TimberUtils.getAlbumArtUri(localItem.albumId).toString(),holder.albumArt,
+        ImageLoader.getInstance().displayImage(TimberUtils.getAlbumArtUri(localItem.albumId).toString(), holder.albumArt,
                 new DisplayImageOptions.Builder().cacheInMemory(true).
-                showImageOnLoading(R.drawable.ic_empty_music2).
-                resetViewBeforeLoading(true).
-                build());
+                        showImageOnLoading(R.drawable.ic_empty_music2).
+                        resetViewBeforeLoading(true).
+                        build());
+        if (MusicPlayer.getCurrentAudioId() == localItem.id) {
+            holder.title.setTextColor(Config.accentColor(mContext, ateKey));
+            if (MusicPlayer.isPlaying()) {
+                holder.visualizer.setColor(Config.accentColor(mContext, ateKey));
+                holder.visualizer.setVisibility(View.VISIBLE);
+            } else {
+                holder.visualizer.setVisibility(View.GONE);
+            }
+        } else {
+            holder.visualizer.setVisibility(View.GONE);
+            if (isPlaylist) {
+                holder.title.setTextColor(Color.WHITE);
+            } else {
+                holder.title.setTextColor(Config.textColorPrimary(mContext, ateKey));
+            }
+        }
+
 
     }
 
