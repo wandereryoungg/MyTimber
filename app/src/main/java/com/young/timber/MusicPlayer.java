@@ -2,17 +2,25 @@ package com.young.timber;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.IBinder;
+import android.provider.MediaStore;
+import android.widget.Toast;
 
 import com.young.timber.utils.TimberUtils;
 
+import java.util.Arrays;
 import java.util.WeakHashMap;
 
+import static com.young.timber.MusicService.LAST;
+import static com.young.timber.MusicService.NEXT;
 import static com.young.timber.MusicService.PREVIOUS_ACTION;
 import static com.young.timber.MusicService.PREVIOUS_FORCE_ACTION;
 
@@ -102,7 +110,105 @@ public class MusicPlayer {
     public static void playAll(final Context context, final long[] list, int position,
                                final long sourceId, final TimberUtils.IdType sourceType,
                                final boolean forceShuffle) {
+        if (list == null || list.length == 0 || context == null) {
+            return;
+        }
+        try {
+            if (forceShuffle) {
+                mService.setShuffleMode(MusicService.SHUFFLE_NORMAL);
+                final long currentId = mService.getAudioId();
+                final int currentQueuePosition = getQueuePosition();
+                if (position != -1 && currentQueuePosition == position && currentId == list[position]) {
+                    final long[] playlist = getQueue();
+                    if (Arrays.equals(list, playlist)) {
+                        mService.play();
+                        return;
+                    }
+                }
+                if (position < 0) {
+                    position = 0;
+                }
+                mService.open(list, forceShuffle ? -1 : position, sourceId, sourceType.mId);
+                mService.play();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+    }
+
+    public static void playNext(final Context context, final long[] list, final long sourceId, final TimberUtils.IdType sourceType) {
+        if (mService == null) {
+            return;
+        }
+        try {
+            mService.enqueue(list, NEXT, sourceId, sourceType.mId);
+            final String message = makeLabel(context, R.plurals.NNNtrackstoqueue, list.length);
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void addToQueue(final Context context, final long[] list, final long sourceId, final TimberUtils.IdType sourceType) {
+        if (mService == null) {
+            return;
+        }
+        try {
+            mService.enqueue(list, LAST, sourceId, sourceType.mId);
+            final String message = makeLabel(context, R.plurals.NNNtrackstoqueue, list.length);
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static final String makeLabel(final Context context, final int pluralInt, final int number) {
+        return context.getResources().getQuantityString(pluralInt, number, number);
+    }
+
+    public static void addToPlaylist(final Context context, final long[] ids, final long playlistid) {
+        final int size = ids.length;
+        final ContentResolver contentResolver = context.getContentResolver();
+        final String[] projection = new String[]{"max(" + "play_order" + ")"};
+        final Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistid);
+        Cursor cursor = null;
+        int base = 0;
+        try {
+            cursor = contentResolver.query(uri, projection, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                base = cursor.getInt(0) + 1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if ((cursor != null)) {
+                cursor.close();
+                cursor = null;
+            }
+        }
+    }
+
+    public static final long[] getQueue() {
+        try {
+            if (mService != null) {
+                return mService.getQueue();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return sEmptyList;
+    }
+
+    public static final int getQueuePosition() {
+        try {
+            if (mService != null) {
+                return mService.getQueuePosition();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public static final long getCurrentAudioId() {
@@ -116,9 +222,9 @@ public class MusicPlayer {
         return -1;
     }
 
-    public static final boolean isPlaying(){
+    public static final boolean isPlaying() {
         try {
-            if (mService!=null){
+            if (mService != null) {
                 return mService.isPlaying();
             }
         } catch (Exception e) {

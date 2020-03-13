@@ -3,13 +3,17 @@ package com.young.timber.adapters;
 import android.graphics.Color;
 import android.os.Handler;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.appthemeengine.Config;
@@ -59,6 +63,7 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
         }
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull ItemHolder holder, int position) {
         Song localItem = arrayList.get(position);
@@ -86,8 +91,57 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
                 holder.title.setTextColor(Config.textColorPrimary(mContext, ateKey));
             }
         }
+        if (animate && isPlaylist) {
+            if (TimberUtils.isLollipop()) {
+                setAnimation(holder.itemView, position);
+            } else {
+                if (position > 10) {
+                    setAnimation(holder.itemView, position);
+                }
+            }
+        }
 
 
+    }
+
+    private void setAnimation(View viewToAnimate, int position) {
+        Animation animation = AnimationUtils.loadAnimation(mContext, androidx.appcompat.R.anim.abc_slide_in_bottom);
+        viewToAnimate.setAnimation(animation);
+        lastPosition = position;
+    }
+
+    private void setOnPopupMenuListener(ItemHolder itemHolder, final int position){
+        itemHolder.popupMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final PopupMenu menu = new PopupMenu(mContext,v);
+                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()){
+                            case R.id.popup_song_play:
+                                MusicPlayer.playAll(mContext,songIDs,position,-1, TimberUtils.IdType.NA,false);
+                                break;
+                            case R.id.popup_song_play_next:
+                                long[] ids = new long[1];
+                                ids[0] = arrayList.get(position).id;
+                                MusicPlayer.playNext(mContext,ids,-1, TimberUtils.IdType.NA);
+                                break;
+                            case R.id.popup_song_addto_queue:
+                                long[] id = new long[1];
+                                id[0] = arrayList.get(position).id;
+                                MusicPlayer.addToQueue(mContext,id,-1, TimberUtils.IdType.NA);
+                                break;
+                            case R.id.popup_song_addto_playlist:
+
+                                break;
+                        }
+                        return false;
+                    }
+                });
+
+            }
+        });
     }
 
     private long[] getSongIds() {

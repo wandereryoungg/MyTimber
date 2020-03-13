@@ -21,6 +21,11 @@ public class TimberUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
+    public static boolean isLollipop() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+
     public enum IdType {
 
         NA(0), Artist(1), Album(2), Playlist(3);
