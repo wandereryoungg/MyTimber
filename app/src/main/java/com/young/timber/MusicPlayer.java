@@ -29,7 +29,7 @@ public class MusicPlayer {
     private static final WeakHashMap<Context, ServiceBinder> mConnectionMap;
     private static final long[] sEmptyList;
     private static ITimberService mService = null;
-    private static ContentValues mContentValuesCache = null;
+    private static ContentValues[] mContentValuesCache = null;
 
 
     static {
@@ -187,6 +187,50 @@ public class MusicPlayer {
                 cursor = null;
             }
         }
+        int numinserted = 0;
+        for (int offset = 0; offset < size; offset += 1000) {
+            makeInsertItems(ids, offset, 1000, base);
+            numinserted += contentResolver.bulkInsert(uri, mContentValuesCache);
+        }
+        final String message = context.getResources().getQuantityString(R.plurals.NNNtrackstoplaylist, numinserted, numinserted);
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void makeInsertItems(final long[] ids, final int offset, int len, final int base) {
+        if (offset + len > ids.length) {
+            len = ids.length - offset;
+        }
+        if (mContentValuesCache == null || mContentValuesCache.length != len) {
+            mContentValuesCache = new ContentValues[len];
+        }
+        for (int i = 0; i < len; i++) {
+            if (mContentValuesCache[i] == null) {
+                mContentValuesCache[i] = new ContentValues();
+            }
+            mContentValuesCache[i].put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, base + offset + i);
+            mContentValuesCache[i].put(MediaStore.Audio.Playlists.Members.AUDIO_ID, offset + i);
+        }
+    }
+
+    public static final long createPlaylist(final Context context, final String name) {
+        if (name != null && name.length() > 0) {
+            ContentResolver contentResolver = context.getContentResolver();
+            final String[] projection = new String[]{MediaStore.Audio.PlaylistsColumns.NAME};
+            final String selection = MediaStore.Audio.PlaylistsColumns.NAME + "=" + name + "'";
+            Cursor cursor = contentResolver.query(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, projection, selection, null, null);
+            if (cursor.getCount() <= 0) {
+                final ContentValues contentValues = new ContentValues();
+                contentValues.put(MediaStore.Audio.PlaylistsColumns.NAME, name);
+                final Uri uri = contentResolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, contentValues);
+                return Long.parseLong(uri.getLastPathSegment());
+            }
+            if (cursor != null) {
+                cursor.close();
+                cursor = null;
+            }
+            return -1;
+        }
+        return -1;
     }
 
     public static final long[] getQueue() {
