@@ -21,8 +21,10 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.young.timber.MusicPlayer;
 import com.young.timber.R;
+import com.young.timber.dialogs.AddPlaylistDialog;
 import com.young.timber.models.Song;
 import com.young.timber.utils.Helpers;
+import com.young.timber.utils.NavigationUtils;
 import com.young.timber.utils.TimberUtils;
 import com.young.timber.widgets.BubbleTextGetter;
 import com.young.timber.widgets.MusicVisualizer;
@@ -39,7 +41,7 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
     private boolean animate;
     private int lastPosition = -1;
     private String ateKey;
-    private int playlistId;
+    private long playlistId;
 
     public SongsListAdapter(List<Song> arrayList, AppCompatActivity mContext, boolean isPlaylist, boolean animate) {
         this.arrayList = arrayList;
@@ -100,8 +102,24 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
                 }
             }
         }
+        setOnPopupMenuListener(holder, position);
 
 
+    }
+
+    public void setPlaylistId(long playlistId) {
+        this.playlistId = playlistId;
+    }
+
+    @Override
+    public int getItemCount() {
+        return (null != arrayList ? arrayList.size() : 0);
+    }
+
+    @Override
+    public void updateDataSet(List<Song> arraylist) {
+        this.arrayList = arraylist;
+        this.songIDs = getSongIds();
     }
 
     private void setAnimation(View viewToAnimate, int position) {
@@ -110,36 +128,59 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
         lastPosition = position;
     }
 
-    private void setOnPopupMenuListener(ItemHolder itemHolder, final int position){
+    private void setOnPopupMenuListener(ItemHolder itemHolder, final int position) {
         itemHolder.popupMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final PopupMenu menu = new PopupMenu(mContext,v);
+                final PopupMenu menu = new PopupMenu(mContext, v);
                 menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()){
+                        switch (item.getItemId()) {
                             case R.id.popup_song_play:
-                                MusicPlayer.playAll(mContext,songIDs,position,-1, TimberUtils.IdType.NA,false);
+                                MusicPlayer.playAll(mContext, songIDs, position, -1, TimberUtils.IdType.NA, false);
                                 break;
                             case R.id.popup_song_play_next:
                                 long[] ids = new long[1];
                                 ids[0] = arrayList.get(position).id;
-                                MusicPlayer.playNext(mContext,ids,-1, TimberUtils.IdType.NA);
+                                MusicPlayer.playNext(mContext, ids, -1, TimberUtils.IdType.NA);
                                 break;
                             case R.id.popup_song_addto_queue:
                                 long[] id = new long[1];
                                 id[0] = arrayList.get(position).id;
-                                MusicPlayer.addToQueue(mContext,id,-1, TimberUtils.IdType.NA);
+                                MusicPlayer.addToQueue(mContext, id, -1, TimberUtils.IdType.NA);
                                 break;
                             case R.id.popup_song_addto_playlist:
-
+                                AddPlaylistDialog.newInstance(arrayList.get(position)).show(mContext.getSupportFragmentManager(), "ADD_PLAYLIST");
                                 break;
+                            case R.id.popup_song_goto_album:
+                                NavigationUtils.goToAlbum(mContext, arrayList.get(position).albumId);
+                                break;
+                            case R.id.popup_song_goto_artist:
+                                NavigationUtils.goToArtist(mContext, arrayList.get(position).artistId);
+                                break;
+                            case R.id.popup_song_share:
+                                TimberUtils.shareTrack(mContext, arrayList.get(position).id);
+                                break;
+                            case R.id.popup_song_delete:
+                                long[] deleteIds = {arrayList.get(position).id};
+                                TimberUtils.showDeleteDialog(mContext, arrayList.get(position).title, deleteIds, SongsListAdapter.this, position);
+                                break;
+                            case R.id.popup_song_remove_playlist:
+                                TimberUtils.deleteFromPlaylist(mContext, arrayList.get(position).id, playlistId);
+                                removeSongAt(position);
+                                notifyItemRemoved(position);
+                                break;
+
                         }
                         return false;
                     }
                 });
-
+                menu.inflate(R.menu.popup_song);
+                menu.show();
+                if (isPlaylist) {
+                    menu.getMenu().findItem(R.id.popup_song_remove_playlist).setVisible(true);
+                }
             }
         });
     }
@@ -191,6 +232,14 @@ public class SongsListAdapter extends BaseSongAdapter<SongsListAdapter.ItemHolde
 
     @Override
     public String getTextToShowInBubble(int pos) {
-        return null;
+        if (arrayList == null || arrayList.size() == 0) {
+            return "";
+        }
+        Character ch = arrayList.get(pos).title.charAt(0);
+        if (Character.isDigit(ch)) {
+            return "#";
+        } else {
+            return Character.toString(ch);
+        }
     }
 }

@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.young.timber.MusicPlayer;
 import com.young.timber.dataloaders.PlaylistLoader;
 import com.young.timber.models.Playlist;
 import com.young.timber.models.Song;
@@ -52,7 +53,8 @@ public class AddPlaylistDialog extends DialogFragment {
                             CreatePlaylistDialog.newInstance(songs).show(getActivity().getSupportFragmentManager(),"CREATE_PLAYLIST");
                             return;
                         }
-
+                        MusicPlayer.addToPlaylist(getActivity(),songs,playlists.get(position-1).id);
+                        dialog.dismiss();
                     }
                 })
                 .build();

@@ -1,12 +1,20 @@
 package com.young.timber.utils;
 
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
+
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.young.timber.adapters.BaseSongAdapter;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -44,6 +52,48 @@ public class TimberUtils {
             }
             throw new IllegalArgumentException("Unrecognized id" + id);
         }
+    }
+
+    public static void shareTrack(Context context, long id) {
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("audio/*");
+        share.putExtra(Intent.EXTRA_STREAM, getSongUri(context, id));
+        context.startActivity(Intent.createChooser(share, "shared"));
+    }
+
+    public static void showDeleteDialog(final Context context, final String name, final long[] list, final BaseSongAdapter adapter, final int pos) {
+        new MaterialDialog.Builder(context)
+                .title("Delete song?")
+                .content("Are you sure you want to delete \" + name + \" ?")
+                .positiveText("Delete")
+                .negativeText("Cancel")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        TimberUtils.deleteTracks(context, list);
+                        adapter.removeSongAt(pos);
+                        adapter.notifyItemRemoved(pos);
+                        adapter.notifyItemRangeChanged(pos, adapter.getItemCount());
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
+    public static void deleteTracks(final Context context, final long[] lists) {
+
+    }
+
+    public static void deleteFromPlaylist(final Context context, final long id,
+                                          final long playlistId) {
+        final Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+        final ContentResolver resolver = context.getContentResolver();
+        resolver.delete(uri, MediaStore.Audio.Playlists.Members.AUDIO_ID + "=?", new String[]{Long.toString(id)});
     }
 
     public static Uri getAlbumArtUri(long albumId) {

@@ -54,8 +54,10 @@ public class CreatePlaylistDialog extends DialogFragment {
                                 Toast.makeText(getActivity(), "Created playlist", Toast.LENGTH_SHORT).show();
                             }
                             if(getParentFragment() instanceof PlaylistFragment){
-                                getParentFragment()
+                                ((PlaylistFragment) getParentFragment()).updatePlaylists(playlistId);
                             }
+                        }else{
+                            Toast.makeText(getActivity(),"Unable to create playlist",Toast.LENGTH_SHORT).show();
                         }
                     }
                 }).build();
