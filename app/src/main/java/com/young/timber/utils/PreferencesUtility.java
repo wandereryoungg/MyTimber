@@ -3,9 +3,6 @@ package com.young.timber.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.preference.PreferenceManager;
-
-import com.young.timber.R;
 
 import static com.young.timber.utils.Constants.PREFERENCES_NAME;
 import static com.young.timber.utils.SortOrder.ArtistSongSortOrder.SONG_A_Z;
@@ -122,14 +119,21 @@ public final class PreferencesUtility {
         setSortOrder(ARTIST_SORT_ORDER, value);
     }
 
-    public final String getArtistSongSortOrder(){
-        return mPreferences.getString(ARTIST_SONG_SORT_ORDER,SONG_A_Z);
+    public final String getArtistSongSortOrder() {
+        return mPreferences.getString(ARTIST_SONG_SORT_ORDER, SONG_A_Z);
     }
 
-    public void setArtistSongSortOrder(final String value){
+    public void setArtistSongSortOrder(final String value) {
         setSortOrder(ARTIST_SONG_SORT_ORDER, value);
     }
 
+    public final String getSongSortOrder() {
+        return mPreferences.getString(SONG_SORT_ORDER, SONG_A_Z);
+    }
+
+    public void setSongSortOrder(final String value) {
+        setSortOrder(SONG_SORT_ORDER, value);
+    }
 
 
 }
