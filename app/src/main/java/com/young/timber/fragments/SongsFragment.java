@@ -34,18 +34,24 @@ public class SongsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_recyclerview, container, false);
         recyclerView = view.findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setEmptyView(getActivity(),view.findViewById(R.id.list_empty),"No media found");
-
+        recyclerView.setEmptyView(getActivity(), view.findViewById(R.id.list_empty), "No media found");
 
 
         return view;
     }
 
-    private class loadSongs extends AsyncTask<String,Void,String>{
-
+    private class loadSongs extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strings) {
+            if (getActivity() != null) {
+            }
             return null;
         }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
     }
+
 }

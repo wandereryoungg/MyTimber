@@ -122,14 +122,20 @@ public final class PreferencesUtility {
         setSortOrder(ARTIST_SORT_ORDER, value);
     }
 
-    public final String getArtistSongSortOrder(){
-        return mPreferences.getString(ARTIST_SONG_SORT_ORDER,SONG_A_Z);
+    public final String getArtistSongSortOrder() {
+        return mPreferences.getString(ARTIST_SONG_SORT_ORDER, SONG_A_Z);
     }
 
-    public void setArtistSongSortOrder(final String value){
+    public void setArtistSongSortOrder(final String value) {
         setSortOrder(ARTIST_SONG_SORT_ORDER, value);
     }
 
+    public final String getSongSortOrder() {
+        return mPreferences.getString(SONG_SORT_ORDER, SONG_A_Z);
+    }
 
+    public void setSongSortOrder(final String value) {
+        setSortOrder(SONG_SORT_ORDER, value);
+    }
 
 }
