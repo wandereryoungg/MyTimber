@@ -35,4 +35,14 @@ public final class SortOrder {
         String SONG_FILENAME = MediaStore.Audio.Media.DATA;
     }
 
+    public interface AlbumSortOrder {
+        String ALBUM_A_Z = MediaStore.Audio.Albums.DEFAULT_SORT_ORDER;
+        String ALBUM_Z_A = ALBUM_A_Z + " DESC";
+        String ALBUM_NUMBER_OF_SONGS = MediaStore.Audio.Albums.NUMBER_OF_SONGS
+                + " DESC";
+        String ALBUM_ARTIST = MediaStore.Audio.Albums.ARTIST;
+        String ALBUM_YEAR = MediaStore.Audio.Albums.FIRST_YEAR + " DESC";
+
+    }
+
 }

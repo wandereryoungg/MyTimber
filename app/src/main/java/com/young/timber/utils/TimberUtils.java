@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.young.timber.R;
 import com.young.timber.adapters.BaseSongAdapter;
 
 import java.net.InetAddress;
@@ -33,7 +34,6 @@ public class TimberUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
-
     public enum IdType {
 
         NA(0), Artist(1), Album(2), Playlist(3);
@@ -52,6 +52,17 @@ public class TimberUtils {
             }
             throw new IllegalArgumentException("Unrecognized id" + id);
         }
+    }
+
+    public static final String makeShortTimeString(final Context context, long secs) {
+        long hours, mins;
+        hours = secs / 3600;
+        secs %= 3600;
+        mins = secs / 60;
+        secs %= 60;
+        final String durationFormat = context.getResources()
+                .getString(hours == 0 ? R.string.durationformatshort : R.string.durationformatlong);
+        return String.format(durationFormat, hours, mins, secs);
     }
 
     public static void shareTrack(Context context, long id) {

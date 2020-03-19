@@ -1,8 +1,13 @@
 package com.young.timber.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.os.Bundle;
+
+import com.young.timber.MusicPlayer;
+import com.young.timber.MusicService;
 
 import static com.young.timber.utils.Constants.PREFERENCES_NAME;
 import static com.young.timber.utils.SortOrder.ArtistSongSortOrder.SONG_A_Z;
@@ -111,6 +116,14 @@ public final class PreferencesUtility {
         editor.commit();
     }
 
+    public final String getAlbumSortOrder() {
+        return mPreferences.getString(ALBUM_SORT_ORDER, SortOrder.AlbumSortOrder.ALBUM_A_Z);
+    }
+
+    public final void setAlbumSortOrder(final String value) {
+        setSortOrder(ALBUM_SORT_ORDER, value);
+    }
+
     public final String getArtistSortOrder() {
         return mPreferences.getString(ARTIST_SORT_ORDER, ARTIST_A_Z);
     }
@@ -135,5 +148,20 @@ public final class PreferencesUtility {
         setSortOrder(SONG_SORT_ORDER, value);
     }
 
+    public boolean alwaysLoadAlbumImagesFromLastfm() {
+        return mPreferences.getBoolean(ALWAYS_LOAD_ALBUM_IMAGES_LASTFM, false);
+    }
 
+    public void updateService(Bundle extra) {
+        if (!MusicPlayer.isPlaybackServiceConnected()) {
+            return;
+        }
+        final Intent intent = new Intent(context, MusicService.class);
+        intent.setAction(MusicService.UPDATE_PREFERENCES);
+        intent.putExtras(extra);
+        context.startService(intent);
+    }
+    public boolean loadArtistAndAlbumImages(){
+        return false;
+    }
 }
