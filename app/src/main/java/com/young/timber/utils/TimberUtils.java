@@ -5,6 +5,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.BaseColumns;
@@ -109,6 +110,15 @@ public class TimberUtils {
 
     public static Uri getAlbumArtUri(long albumId) {
         return ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), albumId);
+    }
+
+    public static int getBlackWhiteColor(int color) {
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        if (darkness >= 0.5) {
+            return Color.WHITE;
+        } else {
+            return Color.BLACK;
+        }
     }
 
     public static Uri getSongUri(Context context, long songId) {

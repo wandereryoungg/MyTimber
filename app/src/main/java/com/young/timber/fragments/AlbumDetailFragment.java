@@ -1,6 +1,7 @@
 package com.young.timber.fragments;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,18 +14,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.afollestad.appthemeengine.Config;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.young.timber.R;
 import com.young.timber.adapters.AlbumSongAdapter;
 import com.young.timber.dataloaders.AlbumLoader;
 import com.young.timber.models.Album;
+import com.young.timber.utils.ATEUtils;
 import com.young.timber.utils.Constants;
+import com.young.timber.utils.Helpers;
+import com.young.timber.utils.ImageUtils;
 import com.young.timber.utils.PreferencesUtility;
+import com.young.timber.utils.TimberUtils;
+
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 public class AlbumDetailFragment extends Fragment {
 
@@ -41,6 +52,7 @@ public class AlbumDetailFragment extends Fragment {
     private Context context;
     private PreferencesUtility mPreferences;
     private Album album;
+    private boolean loadFailed = false;
 
     public static AlbumDetailFragment newInstance(long id, boolean useTransition, String transitionName) {
         AlbumDetailFragment fragment = new AlbumDetailFragment();
@@ -87,7 +99,39 @@ public class AlbumDetailFragment extends Fragment {
         return view;
     }
 
-    private void setAlbumart(){
+    private void setAlbumart() {
+        ImageUtils.loadAlbumArtIntoView(album.id, albumArt, new ImageLoadingListener() {
+            @Override
+            public void onLoadingStarted(String imageUri, View view) {
 
+            }
+
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                loadFailed = true;
+                MaterialDrawableBuilder builder = MaterialDrawableBuilder.with(context)
+                        .setIcon(MaterialDrawableBuilder.IconValue.SHUFFLE)
+                        .setColor(TimberUtils.getBlackWhiteColor(Config.accentColor(context, Helpers.getATEKey(context))));
+                ATEUtils.setFabBackgroundTint(fab, Config.accentColor(context, Helpers.getATEKey(context)));
+                fab.setImageDrawable(builder.build());
+            }
+
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+
+                new Palette.Builder(loadedImage).generate(new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(@Nullable Palette palette) {
+                        Palette.Swatch swatch = palette.getVibrantSwatch();
+                    }
+                });
+
+            }
+
+            @Override
+            public void onLoadingCancelled(String imageUri, View view) {
+
+            }
+        });
     }
 }
