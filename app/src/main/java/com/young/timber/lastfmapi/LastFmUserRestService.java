@@ -4,7 +4,6 @@ import com.young.timber.lastfmapi.models.ScrobbleInfo;
 import com.young.timber.lastfmapi.models.UserLoginInfo;
 
 import java.util.Map;
-
 import retrofit2.Callback;
 import retrofit2.http.Field;
 import retrofit2.http.FieldMap;

@@ -16,6 +16,8 @@ package com.young.timber.lastfmapi;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.util.Log;
 
 import com.young.timber.lastfmapi.callbacks.AlbumInfoListener;
 import com.young.timber.lastfmapi.callbacks.ArtistInfoListener;
@@ -29,6 +31,7 @@ import com.young.timber.lastfmapi.models.ScrobbleInfo;
 import com.young.timber.lastfmapi.models.ScrobbleQuery;
 import com.young.timber.lastfmapi.models.UserLoginInfo;
 import com.young.timber.lastfmapi.models.UserLoginQuery;
+import com.young.timber.utils.PreferencesUtility;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -36,7 +39,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

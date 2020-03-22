@@ -39,7 +39,6 @@ public class RestServiceFactory {
         builder1.cache(new Cache(context.getApplicationContext().getCacheDir(),
                 CACHE_SIZE));
         builder1.connectTimeout(40, TimeUnit.SECONDS);
-        final OkHttpClient okHttpClient = builder1.build();
         Interceptor interceptor = new Interceptor() {
             PreferencesUtility prefs = PreferencesUtility.getInstance(context);
 
@@ -55,8 +54,10 @@ public class RestServiceFactory {
                 return chain.proceed(request);
             }
         };
-        return new Retrofit.Builder().baseUrl(baseUrl).client(okHttpClient)
-                .build().create(clazz);
+        builder1.addInterceptor(interceptor);
+        final OkHttpClient okHttpClient = builder1.build();
+
+        return new Retrofit.Builder().client(okHttpClient).baseUrl(baseUrl).build().create(clazz);
     }
 
     public static <T> T create(final Context context, String baseUrl, Class<T> clazz) {
