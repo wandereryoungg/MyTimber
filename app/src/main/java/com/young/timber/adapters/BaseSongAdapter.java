@@ -16,16 +16,16 @@ import com.young.timber.utils.TimberUtils;
 
 import java.util.List;
 
-public class BaseSongAdapter<V extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<V> {
+public class BaseSongAdapter<T extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<T> {
 
     @NonNull
     @Override
-    public V onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public T onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return null;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull V holder, int position) {
+    public void onBindViewHolder(@NonNull T holder, int position) {
 
     }
 

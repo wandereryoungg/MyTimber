@@ -17,10 +17,10 @@ package com.young.timber.lastfmapi;
 import com.young.timber.lastfmapi.models.AlbumInfo;
 import com.young.timber.lastfmapi.models.ArtistInfo;
 
-import retrofit.Callback;
-import retrofit.http.GET;
-import retrofit.http.Headers;
-import retrofit.http.Query;
+import retrofit2.Callback;
+import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.Query;
 
 public interface LastFmRestService {
 
