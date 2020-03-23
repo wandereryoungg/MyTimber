@@ -35,6 +35,11 @@ public class TimberUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
+    public static final String makeLabel(final Context context, final int pluralInt,
+                                         final int number) {
+        return context.getResources().getQuantityString(pluralInt, number, number);
+    }
+
     public enum IdType {
 
         NA(0), Artist(1), Album(2), Playlist(3);

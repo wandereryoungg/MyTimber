@@ -124,6 +124,14 @@ public final class PreferencesUtility {
         setSortOrder(ALBUM_SORT_ORDER, value);
     }
 
+    public final String getAlbumSongSortOrder() {
+        return mPreferences.getString(ALBUM_SONG_SORT_ORDER, SortOrder.AlbumSongSortOrder.SONG_TRACK_LIST);
+    }
+
+    public final void setAlbumSongSortOrder(final String value) {
+        setSortOrder(ALBUM_SONG_SORT_ORDER, value);
+    }
+
     public final String getArtistSortOrder() {
         return mPreferences.getString(ARTIST_SORT_ORDER, ARTIST_A_Z);
     }
@@ -161,7 +169,8 @@ public final class PreferencesUtility {
         intent.putExtras(extra);
         context.startService(intent);
     }
-    public boolean loadArtistAndAlbumImages(){
+
+    public boolean loadArtistAndAlbumImages() {
         return false;
     }
 }

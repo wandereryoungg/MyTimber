@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.young.timber.R;
 import com.young.timber.activities.MainActivity;
 import com.young.timber.activities.NowPlayingActivity;
+import com.young.timber.fragments.AlbumDetailFragment;
 
 public class NavigationUtils {
 
@@ -20,6 +21,11 @@ public class NavigationUtils {
         FragmentTransaction transaction = ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction();
         Fragment fragment;
         transaction.setCustomAnimations(R.anim.activity_fade_in, R.anim.activity_fade_out, R.anim.activity_fade_in, R.anim.activity_fade_out);
+        fragment = AlbumDetailFragment.newInstance(albumId, false, null);
+        AppCompatActivity activity = (AppCompatActivity) context;
+        transaction.hide(activity.getSupportFragmentManager().findFragmentById(R.id.fragment_container));
+        transaction.add(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null).commit();
 
     }
 
