@@ -42,10 +42,12 @@ public class Young {
             permissionCallback.permissionGranted();
             return;
         }
-        PermissionRequest permissionRequest = new PermissionRequest(new ArrayList<String>(Arrays.asList(permissions)), permissionCallback);
+        PermissionRequest permissionRequest = new PermissionRequest(new ArrayList<>(Arrays.asList(permissions)), permissionCallback);
         permissionRequests.add(permissionRequest);
         activity.requestPermissions(permissions, permissionRequest.getRequestCode());
     }
+
+
 
     public static boolean hasPermission(Activity activity, String[] permissions) {
         for (String permission : permissions) {

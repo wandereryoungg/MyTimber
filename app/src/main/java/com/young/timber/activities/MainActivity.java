@@ -117,6 +117,13 @@ public class MainActivity extends BaseActivity {
     };
 
     private void loadEverything() {
+        Runnable navigation = navigationMap.get(action);
+        if(navigation!=null){
+            navigation.run();
+        }else{
+            navigateLibray.run();
+        }
+
     }
 
     @Override
