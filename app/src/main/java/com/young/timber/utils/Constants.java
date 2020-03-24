@@ -4,6 +4,7 @@ public class Constants {
 
     public static final String PREFERENCES_NAME = "timber";
 
+    public static final String NAVIGATE_SETTINGS = "navigate_settings";
     public static final String NAVIGATE_LIBRARY = "navigate_library";
     public static final String NAVIGATE_PLAYLIST = "navigate_playlist";
     public static final String NAVIGATE_QUEUE = "navigate_queue";

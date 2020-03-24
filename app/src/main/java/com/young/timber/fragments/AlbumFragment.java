@@ -4,6 +4,9 @@ import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -16,9 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.young.timber.R;
 import com.young.timber.adapters.AlbumAdapter;
 import com.young.timber.dataloaders.AlbumLoader;
+import com.young.timber.models.Album;
 import com.young.timber.utils.PreferencesUtility;
+import com.young.timber.utils.SortOrder;
 import com.young.timber.widgets.BaseRecyclerView;
 import com.young.timber.widgets.DividerItemDecoration;
+
+import java.util.List;
 
 public class AlbumFragment extends Fragment {
 
@@ -106,4 +113,79 @@ public class AlbumFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_show_as, menu);
+        inflater.inflate(R.menu.menu_sort_by, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_sort_by_az:
+                mPreferences.setAlbumSortOrder(SortOrder.AlbumSortOrder.ALBUM_A_Z);
+                reloadAdapter();
+                return true;
+            case R.id.menu_sort_by_za:
+                mPreferences.setAlbumSortOrder(SortOrder.AlbumSortOrder.ALBUM_Z_A);
+                reloadAdapter();
+                return true;
+            case R.id.menu_sort_by_year:
+                mPreferences.setAlbumSortOrder(SortOrder.AlbumSortOrder.ALBUM_YEAR);
+                reloadAdapter();
+                return true;
+            case R.id.menu_sort_by_artist:
+                mPreferences.setAlbumSortOrder(SortOrder.AlbumSortOrder.ALBUM_ARTIST);
+                reloadAdapter();
+                return true;
+            case R.id.menu_sort_by_number_of_songs:
+                mPreferences.setAlbumSortOrder(SortOrder.AlbumSortOrder.ALBUM_NUMBER_OF_SONGS);
+                reloadAdapter();
+                return true;
+            case R.id.menu_show_as_list:
+                mPreferences.setAlbumInGrid(false);
+                isGrid = false;
+                updateLayoutManager(1);
+                return true;
+            case R.id.menu_show_as_grid:
+                mPreferences.setAlbumInGrid(true);
+                isGrid = true;
+                updateLayoutManager(2);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void updateLayoutManager(int column) {
+        recyclerView.removeItemDecoration(itemDecoration);
+        recyclerView.setAdapter(new AlbumAdapter(AlbumLoader.getAllAlbums(getActivity()), getActivity()));
+        layoutManager.setSpanCount(column);
+        layoutManager.requestLayout();
+        setItemDecoration();
+    }
+
+    private void reloadAdapter() {
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                List<Album> albums = AlbumLoader.getAllAlbums(getActivity());
+                adapter.updateDataSet(albums);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                adapter.notifyDataSetChanged();
+            }
+        }.execute();
+    }
 }

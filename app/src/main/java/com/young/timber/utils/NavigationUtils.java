@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.young.timber.R;
 import com.young.timber.activities.MainActivity;
 import com.young.timber.activities.NowPlayingActivity;
+import com.young.timber.activities.SettingsActivity;
 import com.young.timber.fragments.AlbumDetailFragment;
 
 public class NavigationUtils {
@@ -33,6 +34,13 @@ public class NavigationUtils {
         Intent intent = new Intent(context, NowPlayingActivity.class);
         context.startActivity(intent);
     }
+
+    public static void navigateToSettings(Activity context) {
+        Intent intent = new Intent(context, SettingsActivity.class);
+        intent.setAction(Constants.NAVIGATE_SETTINGS);
+        context.startActivity(intent);
+    }
+
 
     public static void goToAlbum(Context context, long albumId) {
         Intent intent = new Intent(context, MainActivity.class);

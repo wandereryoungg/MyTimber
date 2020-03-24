@@ -26,6 +26,8 @@ import com.young.timber.fragments.QueueFragment;
 import com.young.timber.permissions.PermissionCallback;
 import com.young.timber.permissions.Young;
 import com.young.timber.slidinguppanel.SlidingUpPanelLayout;
+import com.young.timber.utils.Helpers;
+import com.young.timber.utils.NavigationUtils;
 import com.young.timber.utils.TimberUtils;
 
 import java.util.HashMap;
@@ -123,8 +125,8 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
         action = getIntent().getAction();
-
         isDarkTheme = getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE).getBoolean("dark_theme", false);
+
         navigationMap.put(NAVIGATE_LIBRARY, navigateLibray);
         navigationMap.put(NAVIGATE_PLAYLIST, navigatePlaylist);
         navigationMap.put(NAVIGATE_QUEUE, navigateQueue);
@@ -150,7 +152,7 @@ public class MainActivity extends BaseActivity {
 
         if (TimberUtils.isMarshmallow()) {
             checkPermissionAndThenLoad();
-        }else{
+        } else {
             loadEverything();
         }
 
@@ -175,12 +177,12 @@ public class MainActivity extends BaseActivity {
                         .setAction("OK", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Young.askForPermission(MainActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionReadstorageCallback);
+                                Young.askForPermission(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionReadstorageCallback);
                             }
                         })
                         .show();
-            }else{
-                Young.askForPermission(MainActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},permissionReadstorageCallback);
+            } else {
+                Young.askForPermission(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionReadstorageCallback);
             }
         }
     }
@@ -239,9 +241,31 @@ public class MainActivity extends BaseActivity {
                 runnable = navigateFolder;
                 break;
             case R.id.nav_nowplaying:
-                //TODO
+                if (getCastSession() != null) {
+                    startActivity(new Intent(this, ExpandedControlsActivity.class));
+                } else {
+                    NavigationUtils.navigateToNowplaying(this, false);
+                }
                 break;
-            //TODO
+            case R.id.nav_queue:
+                runnable = navigateQueue;
+                break;
+            case R.id.nav_settings:
+                NavigationUtils.navigateToSettings(this);
+                break;
+            case R.id.nav_about:
+                mDrawerLayout.closeDrawers();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Helpers.showAbout(MainActivity.this);
+                    }
+                }, 300);
+                break;
+            case R.id.nav_donate:
+                startActivity(new Intent(MainActivity.this, DonateActivity.class));
+                break;
         }
         if (runnable != null) {
             menuItem.setChecked(true);

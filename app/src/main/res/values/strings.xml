@@ -1,5 +1,9 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Timber</string>
+    <string name="timber_about_opensource">Timber is a open source Music Player developed by Charlie Young.</string>
+    <string name="timber_source">Report any bugs <u> here </u> </string>
+    <string name="timber_feature_request">Specify any feature request in the Google+ community <u> here </u></string>
+
     <string name="play">Play</string>
     <string name="add_to_playlist">Add to playlist</string>
     <string name="go_to_album">Go to album</string>
@@ -23,7 +27,9 @@
     <string name="sort_order_entry_number_of_albums">Number of albums</string>
     <string name="sort_order_entry_filename">Filename</string>
 
-
+    <string name="menu_show_as">View As</string>
+    <string name="menu_show_as_entry_list">List</string>
+    <string name="menu_show_as_entry_grid">Grid</string>
 
 
     <string name="durationformatshort" translatable="false"><xliff:g id="format">%2$d:%3$02d</xliff:g></string>
