@@ -16,9 +16,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.afollestad.appthemeengine.ATE;
-import com.afollestad.appthemeengine.Config;
 import com.google.android.material.tabs.TabLayout;
+import com.young.appthemeengine.ATE;
+import com.young.appthemeengine.Config;
 import com.young.timber.R;
 import com.young.timber.utils.ATEUtils;
 import com.young.timber.utils.Helpers;
@@ -51,7 +51,7 @@ public class MainFragment extends Fragment {
         actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        ViewPager viewPager = rootView.findViewById(R.id.viewpager);
+        viewPager = rootView.findViewById(R.id.viewpager);
         if (viewPager != null) {
             setupViewPager(viewPager);
             viewPager.setOffscreenPageLimit(2);

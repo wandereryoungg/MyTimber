@@ -25,13 +25,13 @@ import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.afollestad.appthemeengine.ATE;
-import com.afollestad.appthemeengine.Config;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.young.appthemeengine.ATE;
+import com.young.appthemeengine.Config;
 import com.young.timber.MusicPlayer;
 import com.young.timber.R;
 import com.young.timber.adapters.AlbumSongAdapter;

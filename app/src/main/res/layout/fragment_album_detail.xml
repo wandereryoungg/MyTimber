@@ -18,7 +18,7 @@
             android:theme="@style/Theme.AppCompat"
             app:contentScrim="@color/colorPrimary"
             app:expandedTitleTextAppearance="@style/TextApperance.Album.Title"
-            app:layout_scrollFlags="scroll||exitUntilCollapsed"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:statusBarScrim="@color/colorPrimaryDark">
 
             <ImageView

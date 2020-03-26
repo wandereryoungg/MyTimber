@@ -29,7 +29,7 @@ public class SongLoader {
                 int trackNumber = cursor.getInt(5);
                 long artistId = cursor.getLong(6);
                 long albumId = cursor.getLong(7);
-                songs.add(new Song(albumId, album, artistId, artist, duration, id, title, trackNumber));
+                songs.add(new Song(id, albumId, artistId, title, artist, album, duration, trackNumber));
             } while (cursor.moveToNext());
         }
         if (cursor != null) {

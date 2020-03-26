@@ -14,12 +14,12 @@ import androidx.annotation.Nullable;
 import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.afollestad.appthemeengine.Config;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.young.appthemeengine.Config;
 import com.young.timber.R;
 import com.young.timber.models.Album;
 import com.young.timber.utils.Helpers;
