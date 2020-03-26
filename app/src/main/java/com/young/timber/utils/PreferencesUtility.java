@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import com.young.timber.MusicPlayer;
@@ -171,6 +172,16 @@ public final class PreferencesUtility {
     }
 
     public boolean loadArtistAndAlbumImages() {
+        if (mPreferences.getBoolean(ARTIST_ALBUM_IMAGE, true)) {
+            if (!mPreferences.getBoolean(ARTIST_ALBUM_IMAGE_MOBILE, true)) {
+                if (connManager == null) {
+                    connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                    NetworkInfo info = connManager.getActiveNetworkInfo();
+                    return info != null && info.getType() == ConnectivityManager.TYPE_WIFI;
+                }
+                return true;
+            }
+        }
         return false;
     }
 }
