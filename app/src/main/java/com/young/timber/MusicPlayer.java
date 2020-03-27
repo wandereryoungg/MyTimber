@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
@@ -316,4 +317,37 @@ public class MusicPlayer {
             this.mWrappedContext = context;
         }
     }
+
+    public static void clearQueue() {
+        if (mService != null) {
+            try {
+                mService.removeTracks(0, Integer.MAX_VALUE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static final void openFile(final String path) {
+        if (mService != null) {
+            try {
+                mService.openFile(path);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static final String getTrackName() {
+        if (mService != null) {
+            try {
+                return mService.getTrackName();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+
 }

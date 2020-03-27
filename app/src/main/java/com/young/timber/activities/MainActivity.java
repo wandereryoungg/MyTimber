@@ -4,12 +4,18 @@ import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -18,6 +24,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.young.timber.MusicPlayer;
 import com.young.timber.R;
 import com.young.timber.fragments.FoldersFragment;
 import com.young.timber.fragments.MainFragment;
@@ -118,9 +125,9 @@ public class MainActivity extends BaseActivity {
 
     private void loadEverything() {
         Runnable navigation = navigationMap.get(action);
-        if(navigation!=null){
+        if (navigation != null) {
             navigation.run();
-        }else{
+        } else {
             navigateLibray.run();
         }
 
@@ -164,6 +171,37 @@ public class MainActivity extends BaseActivity {
         }
 
         addBackstackListener();
+
+        if (Intent.ACTION_VIEW.equals(action)) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    MusicPlayer.clearQueue();
+                    MusicPlayer.openFile(getIntent().getData().getPath());
+                    MusicPlayer.playOrPause();
+                    navigateNowplaying.run();
+                }
+            }, 350);
+        }
+
+        if (!panelLayout.isPanelHidden() && MusicPlayer.getTrackName() == null) {
+            panelLayout.hidePanel();
+        }
+        if (playServicesAvailable) {
+            final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams
+                    (FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.BOTTOM;
+            FrameLayout contentRoot = findViewById(R.id.content_root);
+            contentRoot.addView(LayoutInflater.from(this).inflate(R.layout.fragment_cast_mini_controller, null), params);
+            findViewById(R.id.castMiniController).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, ExpandedControlsActivity.class));
+                }
+            });
+
+        }
     }
 
     private void addBackstackListener() {
@@ -287,4 +325,41 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if (isNavigatingMain()) {
+                    mDrawerLayout.openDrawer(GravityCompat.START);
+                } else {
+                    super.onBackPressed();
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private boolean isNavigatingMain() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        return (fragment instanceof MainFragment || fragment instanceof QueueFragment ||
+                fragment instanceof PlaylistFragment || fragment instanceof FoldersFragment);
+    }
+
+    @Override
+    public void onBackPressed() {
+        //TODO理解不了
+        if (panelLayout.isPanelExpanded()) {
+            panelLayout.collapsePanel();
+        } else if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
 }
