@@ -1,6 +1,7 @@
 package com.young.timber.utils;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -59,8 +60,9 @@ public class ImageUtils {
         LastFmClient.getInstance(albumArt.getContext()).getAlbumInfo(new AlbumQuery(album.title, album.artistName), new AlbumInfoListener() {
             @Override
             public void albumInfoSuccess(LastfmAlbum album) {
+                Log.e("young","album==null"+album);
                 if (album != null) {
-                    ImageLoader.getInstance().displayImage(album.mArtwork.get(4).mUrl, albumArt, lastfmDisplayImageOptions, new ImageLoadingListener() {
+                    ImageLoader.getInstance().displayImage(album.getmArtwork().get(4).mUrl, albumArt, lastfmDisplayImageOptions, new ImageLoadingListener() {
                         @Override
                         public void onLoadingStarted(String imageUri, View view) {
                             listener.onLoadingStarted(imageUri, view);

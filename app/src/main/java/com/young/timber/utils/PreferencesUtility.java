@@ -6,6 +6,9 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
+
+import androidx.core.os.EnvironmentCompat;
 
 import com.young.timber.MusicPlayer;
 import com.young.timber.MusicService;
@@ -184,4 +187,14 @@ public final class PreferencesUtility {
         }
         return false;
     }
+
+    public void storeLastFolder(String path) {
+        mPreferences.edit().putString(LAST_FOLDER, path).commit();
+    }
+
+    public String getLastFolder() {
+        return mPreferences.getString(LAST_FOLDER, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath());
+    }
+
+
 }

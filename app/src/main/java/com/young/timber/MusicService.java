@@ -1,15 +1,48 @@
 package com.young.timber;
 
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.RemoteControlClient;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.PowerManager;
+import android.os.Process;
 import android.os.RemoteException;
+import android.os.SystemClock;
+import android.provider.MediaStore;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.young.timber.helpers.MusicPlaybackTrack;
+import com.young.timber.provider.MusicPlaybackState;
+import com.young.timber.provider.RecentStore;
+import com.young.timber.provider.SongPlayCount;
+import com.young.timber.utils.TimberUtils;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.TreeSet;
 
 public class MusicService extends Service {
 
@@ -67,18 +100,194 @@ public class MusicService extends Service {
     private static final int FADEUP = 7;
     private static final int IDLE_DELAY = 5 * 60 * 1000;
     private static final long REWIND_INSTEAD_PREVIOUS_THRESHOLD = 3000;
+    private static final String[] PROJECTION = new String[]{"audio._id AS _id",
+            MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.MIME_TYPE, MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ARTIST_ID
+    };
+    private static final String[] ALBUM_PROJECTION = new String[]{
+            MediaStore.Audio.Media.ALBUM, MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Albums.LAST_YEAR
+    };
+    private static final String[] NOTIFICATION_PROJECTION = new String[]{
+            "audio._id AS _id", MediaStore.Audio.AudioColumns.ALBUM_ID, MediaStore.Audio.AudioColumns.TITLE,
+            MediaStore.Audio.AudioColumns.ARTIST, MediaStore.Audio.AudioColumns.DURATION
+    };
+    private static final Shuffler mShuffler = new Shuffler();
+    private static final int NOTIFY_MODE_NONE = 0;
+    private static final int NOTIFY_MODE_FOREGROUND = 1;
+    private static final int NOTIFY_MODE_BACKGROUND = 2;
+    private static final String[] PROJECTION_MATRIX = new String[]{
+            "_id", MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.MIME_TYPE, MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ARTIST_ID
+    };
+    private static LinkedList<Integer> mHistory = new LinkedList<>();
+    private MultiPlayer mPlayer;
+    private String mFileToPlay;
+    private PowerManager.WakeLock mWakeLock;
+    private AlarmManager mAlarmManager;
+    private PendingIntent mShutdownIntent;
+    private boolean mShutdownScheduled;
+    private NotificationManagerCompat mNotificationManager;
+    private Cursor mCursor;
+    private Cursor mAlbumCursor;
+    private AudioManager mAudioManager;
+    private SharedPreferences mPreferences;
+    private boolean mServiceInUse = false;
+    private boolean mIsSupposedToBePlaying = false;
+    private long mLastPlayedTime;
+    private int mNotifyMode = NOTIFY_MODE_NONE;
+    private long mNotificationPostTime = 0;
+    private boolean mQueueIsSaveable = true;
+    private boolean mPausedByTransientLossOfFocus = false;
+    private MediaSessionCompat mSession;
+    private RemoteControlClient mRemoteControlClient;
+
+    private ComponentName mMediaButtonReceiverComponent;
+
+    private int mCardId;
+
+    private int mPlayPos = -1;
+
+    private int mNextPlayPos = -1;
+
+    private int mOpenFailedCounter = 0;
+
+    private int mMediaMountedCount = 0;
+
+    private int mShuffleMode = SHUFFLE_NONE;
+
+    private int mRepeatMode = REPEAT_NONE;
+
+    private int mServiceStartId = -1;
+    private ArrayList<MusicPlaybackTrack> mPlaylist = new ArrayList<>(100);
+
+    private long[] mAutoShuffleList = null;
+    private MusicPlayerHandler mPlayerHander;
+    private final AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+
+        }
+    };
+    private HandlerThread mHandlerThread;
+    private BroadcastReceiver mUnmountReceiver = null;
+    private MusicPlaybackState mPlaybackStateStore;
+    private boolean mShowAlbumArtOnLockscreen;
+    private boolean mActivateXTrackSelector;
+    private SongPlayCount mSongPlayCount;
+    private RecentStore mRecentStore;
+    private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+        }
+    };
+    private ContentObserver mMediaStoreObserver;
 
     private final IBinder mBinder = new ServiceStub(this);
-
 
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        if (D) {
+            Log.d(TAG, "Service bound, intent = " + intent);
+        }
+        cancelShutdown();
+        mServiceInUse = true;
         return mBinder;
     }
 
-    private static final class ServiceStub extends ITimberService.Stub{
+    @Override
+    public boolean onUnbind(Intent intent) {
+        if (D) {
+            Log.d(TAG, "service unBind");
+        }
+        mServiceInUse = false;
+        saveQueue(true);
+        if (mIsSupposedToBePlaying || mPausedByTransientLossOfFocus) {
+            return true;
+        } else if (mPlaylist.size() > 0 || mPlayerHander.hasMessages(TRACK_ENDED)) {
+            scheduleDelayedShutdown();
+            return true;
+        }
+        stopSelf(mServiceStartId);
+        return true;
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        cancelShutdown();
+        mServiceInUse = true;
+    }
+
+    private void scheduleDelayedShutdown() {
+        if (D) Log.v(TAG, "Scheduling shutdown in " + IDLE_DELAY + " ms");
+        mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + IDLE_DELAY, mShutdownIntent);
+        mShutdownScheduled = true;
+    }
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (D) {
+            Log.d(TAG, "Creating service");
+        }
+        mNotificationManager = NotificationManagerCompat.from(this);
+        createNotificationChannel();
+        mPlaybackStateStore = MusicPlaybackState.getInstance(this);
+        mSongPlayCount = SongPlayCount.getInstance(this);
+        mRecentStore = RecentStore.getInstance(this);
+        mHandlerThread= new HandlerThread("MusicPlayerHandler", Process.THREAD_PRIORITY_BACKGROUND);
+        mHandlerThread.start();
+
+
+    }
+
+    private void createNotificationChannel() {
+        if (TimberUtils.isOreo()) {
+            CharSequence name = "Timber";
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+            manager.createNotificationChannel(mChannel);
+        }
+    }
+
+    private void saveQueue(final boolean full) {
+        if (!mQueueIsSaveable) {
+            return;
+        }
+        final SharedPreferences.Editor editor = mPreferences.edit();
+        if (full) {
+            mPlaybackStateStore.saveState(mPlaylist, mShuffleMode != SHUFFLE_NONE ? mHistory : null);
+            editor.putInt("cardid", mCardId);
+        }
+        editor.putInt("curpos", mPlayPos);
+        if (mPlayer.isInitialized()) {
+            editor.putLong("seekpos", mPlayer.position());
+        }
+        editor.putInt("repeatmode", mRepeatMode);
+        editor.putInt("shufflemode", mShuffleMode);
+        editor.commit();
+    }
+
+    private void cancelShutdown() {
+        if (D) {
+            Log.d(TAG, "Cancelling delayed shutdown, scheduled = " + mShutdownScheduled);
+        }
+        if (mShutdownScheduled) {
+            mAlarmManager.cancel(mShutdownIntent);
+            mShutdownScheduled = false;
+        }
+    }
+
+    private static final class ServiceStub extends ITimberService.Stub {
 
         private WeakReference<MusicService> mService;
 
@@ -305,6 +514,244 @@ public class MusicService extends Service {
         public int getAudioSessionId() throws RemoteException {
             return 0;
         }
+    }
+
+    private static final class Shuffler {
+        private final LinkedList<Integer> mHistoryOfNumbers = new LinkedList<>();
+        private final TreeSet<Integer> mPreviousNumbers = new TreeSet<>();
+        private final Random random = new Random();
+        private int mPrevious;
+
+        public Shuffler() {
+            super();
+        }
+
+        public int nextInt(final int interval) {
+            int next;
+            do {
+                next = random.nextInt(interval);
+            } while (next == mPrevious && interval > 1 && !mPreviousNumbers.contains(Integer.valueOf(next)));
+            mPrevious = next;
+            mHistoryOfNumbers.add(mPrevious);
+            mPreviousNumbers.add(mPrevious);
+            cleanUpHistory();
+            return next;
+
+        }
+
+        private void cleanUpHistory() {
+            if (!mHistoryOfNumbers.isEmpty() && mHistoryOfNumbers.size() >= MAX_HISTORY_SIZE) {
+                for (int i = 0; i < Math.max(1, MAX_HISTORY_SIZE / 2); i++) {
+                    mPreviousNumbers.remove(mHistoryOfNumbers.removeFirst());
+                }
+            }
+        }
+    }
+
+    private static final class MultiPlayer implements MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
+        private final WeakReference<MusicService> mService;
+        private MediaPlayer mCurrentMediaPlayer = new MediaPlayer();
+        private MediaPlayer mNextMediaPlayer;
+        private Handler mHandler;
+        private boolean mIsInitialized = false;
+        private String mNextMediaPath;
+
+        public MultiPlayer(MusicService service) {
+            this.mService = new WeakReference<>(service);
+            mCurrentMediaPlayer.setWakeMode(mService.get(), PowerManager.PARTIAL_WAKE_LOCK);
+        }
+
+        public void setDataSource(final String path) {
+            mIsInitialized = setDataSourceImpl(mCurrentMediaPlayer, path);
+            if (mIsInitialized) {
+
+            }
+        }
+
+        public void setNextDataSource(final String path) {
+            mNextMediaPath = null;
+            try {
+                mCurrentMediaPlayer.setNextMediaPlayer(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+            if (mNextMediaPlayer != null) {
+                mNextMediaPlayer.release();
+                mNextMediaPlayer = null;
+            }
+            if (path == null) {
+                return;
+            }
+            mNextMediaPlayer = new MediaPlayer();
+            mNextMediaPlayer.setWakeMode(mService.get(), PowerManager.PARTIAL_WAKE_LOCK);
+            mNextMediaPlayer.setAudioSessionId(getAudioSessionId());
+            if (setDataSourceImpl(mNextMediaPlayer, path)) {
+                mNextMediaPath = path;
+                mCurrentMediaPlayer.setNextMediaPlayer(mNextMediaPlayer);
+            } else {
+                if (mNextMediaPlayer != null) {
+                    mNextMediaPlayer.release();
+                    mNextMediaPlayer = null;
+                }
+            }
+
+        }
+
+        public void setHandler(final Handler handler) {
+            mHandler = handler;
+        }
+
+        public boolean isInitialized() {
+            return mIsInitialized;
+        }
+
+        public void start() {
+            mCurrentMediaPlayer.start();
+        }
+
+        public void stop() {
+            mCurrentMediaPlayer.reset();
+            mIsInitialized = false;
+        }
+
+        public void release() {
+            mCurrentMediaPlayer.release();
+        }
+
+
+        public void pause() {
+            mCurrentMediaPlayer.pause();
+        }
+
+
+        public long duration() {
+            return mCurrentMediaPlayer.getDuration();
+        }
+
+
+        public long position() {
+            return mCurrentMediaPlayer.getCurrentPosition();
+        }
+
+        public long seek(final long whereto) {
+            return whereto;
+        }
+
+        public void setVolume(final float vol) {
+            try {
+                mCurrentMediaPlayer.setVolume(vol, vol);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void setAudioSessionId(final int sessionId) {
+            mCurrentMediaPlayer.setAudioSessionId(sessionId);
+        }
+
+        public int getAudioSessionId() {
+            return mCurrentMediaPlayer.getAudioSessionId();
+        }
+
+
+        private boolean setDataSourceImpl(final MediaPlayer player, final String path) {
+            try {
+                player.reset();
+                player.setOnPreparedListener(null);
+                if (path.startsWith("content://")) {
+                    player.setDataSource(mService.get(), Uri.parse(path));
+                } else {
+                    player.setDataSource(path);
+                }
+                player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                player.prepare();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            player.setOnCompletionListener(this);
+            player.setOnErrorListener(this);
+            return true;
+        }
+
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            if (mp == mCurrentMediaPlayer && mNextMediaPlayer != null) {
+                mCurrentMediaPlayer.release();
+                mCurrentMediaPlayer = mNextMediaPlayer;
+                mNextMediaPlayer = null;
+                mNextMediaPath = null;
+                mHandler.sendEmptyMessage(TRACK_WENT_TO_NEXT);
+            } else {
+                mService.get().mWakeLock.acquire(30000);
+                mHandler.sendEmptyMessage(TRACK_ENDED);
+                mHandler.sendEmptyMessage(RELEASE_WAKELOCK);
+            }
+        }
+
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            switch (what) {
+                case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                    final MusicService service = mService.get();
+                    final TrackErrorInfo errorInfo = new TrackErrorInfo(service.getAudioId(), service.getTrackName());
+                    mIsInitialized = false;
+                    mCurrentMediaPlayer.release();
+                    mCurrentMediaPlayer = new MediaPlayer();
+                    mCurrentMediaPlayer.setWakeMode(service, PowerManager.PARTIAL_WAKE_LOCK);
+                    Message msg = mHandler.obtainMessage(SERVER_DIED, errorInfo);
+                    mHandler.sendMessageDelayed(msg, 2000);
+                    return true;
+                default:
+                    break;
+            }
+            return false;
+        }
+    }
+
+    public String getTrackName() {
+        synchronized (this) {
+            if (mCursor == null) {
+                return null;
+            }
+            return mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.TITLE));
+        }
+    }
+
+    public long getAudioId() {
+        MusicPlaybackTrack track = getCurrentTrack();
+        if (track != null) {
+            return track.mId;
+        }
+
+        return -1;
+    }
+
+    public MusicPlaybackTrack getCurrentTrack() {
+        return getTrack(mPlayPos);
+    }
+
+    public synchronized MusicPlaybackTrack getTrack(int index) {
+        if (index >= 0 && index < mPlaylist.size() && mPlayer.isInitialized()) {
+            return mPlaylist.get(index);
+        }
+
+        return null;
+    }
+
+    private static final class TrackErrorInfo {
+        public long mId;
+        public String mTrackName;
+
+        public TrackErrorInfo(long id, String trackName) {
+            mId = id;
+            mTrackName = trackName;
+        }
+    }
+
+    private static final class MusicPlayerHandler extends Handler {
+
     }
 
 

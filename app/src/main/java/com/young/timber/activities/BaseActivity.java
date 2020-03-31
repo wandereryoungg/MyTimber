@@ -29,17 +29,29 @@ public class BaseActivity extends ATEActivity implements MusicStateListener {
 
     @Override
     public void restartLoader() {
-
+        for (final MusicStateListener listener : mMusicStateListener) {
+            if (listener != null) {
+                listener.restartLoader();
+            }
+        }
     }
 
     @Override
     public void onPlaylistChanged() {
-
+        for (final MusicStateListener listener : mMusicStateListener) {
+            if (listener != null) {
+                listener.onPlaylistChanged();
+            }
+        }
     }
 
     @Override
     public void onMetaChanged() {
-
+        for (final MusicStateListener listener : mMusicStateListener) {
+            if (listener != null) {
+                listener.onMetaChanged();
+            }
+        }
     }
 
     private class SessionManagerListenerImpl extends SimpleSessionManagerListener {

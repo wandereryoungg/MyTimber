@@ -29,35 +29,35 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RestServiceFactory {
     private static final String TAG_OK_HTTP = "OkHttp";
     private static final long CACHE_SIZE = 1024 * 1024;
 
     public static <T> T createStatic(final Context context, String baseUrl, Class<T> clazz) {
-        final OkHttpClient.Builder builder1 = new OkHttpClient.Builder();
-        builder1.cache(new Cache(context.getApplicationContext().getCacheDir(),
-                CACHE_SIZE));
-        builder1.connectTimeout(40, TimeUnit.SECONDS);
-        Interceptor interceptor = new Interceptor() {
-            PreferencesUtility prefs = PreferencesUtility.getInstance(context);
+        final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .cache(new Cache(context.getApplicationContext().getCacheDir(), CACHE_SIZE))
+                .connectTimeout(40, TimeUnit.SECONDS)
+                .addInterceptor(new Interceptor() {
+                    PreferencesUtility pref = PreferencesUtility.getInstance(context);
 
-            @NotNull
-            @Override
-            public Response intercept(@NotNull Chain chain) throws IOException {
-                Request request = chain.request().newBuilder().addHeader("Connection", "keep-alive")
-                        .addHeader("Cache-Control",
-                                String.format("max-age=%d,%smax-stale=%d",
-                                        Integer.valueOf(60 * 60 * 24 * 7),
-                                        prefs.loadArtistAndAlbumImages() ? "" : "only-if-cached,", Integer.valueOf(31536000)))
-                        .build();
-                return chain.proceed(request);
-            }
-        };
-        builder1.addInterceptor(interceptor);
-        final OkHttpClient okHttpClient = builder1.build();
-
-        return new Retrofit.Builder().client(okHttpClient).baseUrl(baseUrl).build().create(clazz);
+                    @NotNull
+                    @Override
+                    public Response intercept(@NotNull Chain chain) throws IOException {
+                        Request request = chain.request().newBuilder()
+                                .addHeader("Connection", "keep-alive")
+                                .addHeader("Cache-Control",
+                                        String.format("max-age=%d,%smax-stale=%d",
+                                                Integer.valueOf(60 * 60 * 24 * 7),
+                                                pref.loadArtistAndAlbumImages() ? "" : "only-if-cached,", Integer.valueOf(31536000)))
+                                .build();
+                        return chain.proceed(request);
+                    }
+                }).build();
+        return new Retrofit.Builder().baseUrl(baseUrl).client(okHttpClient)
+                //.addConverterFactory(GsonConverterFactory.create())
+                .build().create(clazz);
     }
 
     public static <T> T create(final Context context, String baseUrl, Class<T> clazz) {

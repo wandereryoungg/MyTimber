@@ -30,6 +30,11 @@
     <string name="menu_show_as">View As</string>
     <string name="menu_show_as_entry_list">List</string>
     <string name="menu_show_as_entry_grid">Grid</string>
+    <string name="menu_show_as_entry_default">Default</string>
+
+    <string name="nothing_found">Nothing found</string>
+    <string name="folders">Folders</string>
+    <string name="select_storage">Select storage</string>
 
 
     <string name="durationformatshort" translatable="false"><xliff:g id="format">%2$d:%3$02d</xliff:g></string>

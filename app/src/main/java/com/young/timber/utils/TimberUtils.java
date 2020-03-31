@@ -27,6 +27,10 @@ import java.util.List;
 
 public class TimberUtils {
 
+    public static boolean isOreo(){
+        return Build.VERSION.SDK_INT>=Build.VERSION_CODES.O;
+    }
+
     public static boolean isMarshmallow() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }

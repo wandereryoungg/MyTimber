@@ -51,8 +51,8 @@ public class LastFmClient {
 
     public static final String JSON = "json";
 
-    public static final String BASE_API_URL = "http://ws.audioscrobbler.com/2.0";
-    public static final String BASE_SECURE_API_URL = "https://ws.audioscrobbler.com/2.0";
+    public static final String BASE_API_URL = "http://ws.audioscrobbler.com/2.0/";
+    public static final String BASE_SECURE_API_URL = "https://ws.audioscrobbler.com/2.0/";
 
     public static final String PREFERENCES_NAME = "Lastfm";
     static final String PREFERENCE_CACHE_NAME = "Cache";
@@ -101,14 +101,16 @@ public class LastFmClient {
     }
 
     public void getAlbumInfo(AlbumQuery albumQuery, final AlbumInfoListener listener) {
-        mRestService.getAlbumInfo(albumQuery.mArtist, albumQuery.mALbum, new Callback<AlbumInfo>() {
+        mRestService.getAlbumInfo(albumQuery.mArtist, albumQuery.mALbum).enqueue(new Callback<AlbumInfo>() {
             @Override
             public void onResponse(Call<AlbumInfo> call, Response<AlbumInfo> response) {
+                Log.e("young","------------------------"+response.body().toString());
                 listener.albumInfoSuccess(response.body().mAlbum);
             }
 
             @Override
             public void onFailure(Call<AlbumInfo> call, Throwable t) {
+                Log.e("young","-------------------获取图片失败");
                 listener.albumInfoFailed();
                 t.printStackTrace();
             }

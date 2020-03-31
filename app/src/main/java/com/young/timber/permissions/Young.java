@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,9 +20,9 @@ public class Young {
     private static SharedPreferences sharedPreferences;
     private static List<PermissionRequest> permissionRequests = new ArrayList<>();
 
-    public static void init(Context context){
+    public static void init(Context context) {
         Young.context = context;
-        sharedPreferences = context.getSharedPreferences("com.young.runtimepermissionhelper",Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences("com.young.runtimepermissionhelper", Context.MODE_PRIVATE);
     }
 
     public static boolean checkPermission(String permissionName) {
@@ -29,6 +31,7 @@ public class Young {
         }
         return PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(permissionName);
     }
+
 
     public static boolean shouldShowRequestPermissionRationale(Activity activity, String permission) {
         return activity.shouldShowRequestPermissionRationale(permission);
@@ -46,7 +49,6 @@ public class Young {
         permissionRequests.add(permissionRequest);
         activity.requestPermissions(permissions, permissionRequest.getRequestCode());
     }
-
 
 
     public static boolean hasPermission(Activity activity, String[] permissions) {

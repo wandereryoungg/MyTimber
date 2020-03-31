@@ -31,7 +31,7 @@ public class AlbumLoader {
     }
 
     public static Album getAlbum(Context context, long id) {
-        return getAlbum(makeAlbumCursor(context, "id=?", new String[]{String.valueOf(id)}));
+        return getAlbum(makeAlbumCursor(context, "_id=?", new String[]{String.valueOf(id)}));
     }
 
     public static Album getAlbum(Cursor cursor) {

@@ -24,6 +24,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.young.timber.MusicPlayer;
 import com.young.timber.R;
 import com.young.timber.fragments.FoldersFragment;
@@ -123,6 +125,7 @@ public class MainActivity extends BaseActivity {
         }
     };
 
+    //TODO
     private void loadEverything() {
         Runnable navigation = navigationMap.get(action);
         if (navigation != null) {
@@ -130,6 +133,7 @@ public class MainActivity extends BaseActivity {
         } else {
             navigateLibray.run();
         }
+
 
     }
 
@@ -214,7 +218,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkPermissionAndThenLoad() {
-        if (Young.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && Young.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (Young.checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && Young.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)&&Young.checkPermission(Manifest.permission.INTERNET)) {
             loadEverything();
         } else {
             if (Young.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
@@ -362,4 +366,31 @@ public class MainActivity extends BaseActivity {
             super.onBackPressed();
         }
     }
+
+    @Override
+    public void onMetaChanged() {
+        super.onMetaChanged();
+        setDetailsToHeader();
+    //TODO 理解不了
+        if (panelLayout.isPanelHidden() && MusicPlayer.getTrackName() != null) {
+            panelLayout.showPanel();
+        }
+    }
+
+    public void setDetailsToHeader() {
+        String name = MusicPlayer.getTrackName();
+        String artist = MusicPlayer.getArtistName();
+
+        if (name != null && artist != null) {
+            songTitle.setText(name);
+            songArtist.setText(artist);
+        }
+        ImageLoader.getInstance().displayImage(TimberUtils.getAlbumArtUri(MusicPlayer.getCurrentAlbumId()).toString(),
+                albumArt,
+                new DisplayImageOptions.Builder().cacheInMemory(true)
+                        .showImageOnFail(R.drawable.ic_empty_music2)
+                        .resetViewBeforeLoading(true)
+                        .build());
+    }
+
 }

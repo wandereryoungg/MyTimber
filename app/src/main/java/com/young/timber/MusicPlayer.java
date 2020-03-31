@@ -349,5 +349,27 @@ public class MusicPlayer {
         return null;
     }
 
+    public static final String getArtistName(){
+        if(mService !=null){
+            try {
+                return mService.getArtistName();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public static final long getCurrentAlbumId(){
+        if(mService!=null){
+            try {
+                return mService.getAlbumId();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
 
 }

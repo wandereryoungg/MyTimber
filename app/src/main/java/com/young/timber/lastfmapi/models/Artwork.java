@@ -26,4 +26,8 @@ public class Artwork {
 
     @SerializedName(SIZE)
     public String mSize;
+
+    public String getmUrl() {
+        return mUrl;
+    }
 }
