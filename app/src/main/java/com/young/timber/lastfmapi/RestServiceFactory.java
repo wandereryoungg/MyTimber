@@ -46,17 +46,20 @@ public class RestServiceFactory {
                     @Override
                     public Response intercept(@NotNull Chain chain) throws IOException {
                         Request request = chain.request().newBuilder()
-                                .addHeader("Connection", "keep-alive")
+                                .addHeader("Connection", "close")
+                                /*
                                 .addHeader("Cache-Control",
                                         String.format("max-age=%d,%smax-stale=%d",
                                                 Integer.valueOf(60 * 60 * 24 * 7),
                                                 pref.loadArtistAndAlbumImages() ? "" : "only-if-cached,", Integer.valueOf(31536000)))
+
+                                 */
                                 .build();
                         return chain.proceed(request);
                     }
                 }).build();
         return new Retrofit.Builder().baseUrl(baseUrl).client(okHttpClient)
-                //.addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build().create(clazz);
     }
 

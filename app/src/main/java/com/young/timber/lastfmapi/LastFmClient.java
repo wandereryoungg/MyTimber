@@ -46,7 +46,7 @@ import retrofit2.Response;
 public class LastFmClient {
 
     //TODO update the api keys
-    public static final String API_KEY = "62ac1851456e4558bef1c41747b1aec2";
+    public static final String API_KEY = "ec3813b8d1a1f9f87175dfdd3f7d5118";
     public static final String API_SECRET = "b4ae8965723d67fb18e35d207014d6f3";
 
     public static final String JSON = "json";
@@ -104,7 +104,7 @@ public class LastFmClient {
         mRestService.getAlbumInfo(albumQuery.mArtist, albumQuery.mALbum).enqueue(new Callback<AlbumInfo>() {
             @Override
             public void onResponse(Call<AlbumInfo> call, Response<AlbumInfo> response) {
-                Log.e("young","------------------------"+response.body().toString());
+                Log.e("young","------------------------"+response.toString());
                 listener.albumInfoSuccess(response.body().mAlbum);
             }
 

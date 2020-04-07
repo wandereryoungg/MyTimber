@@ -26,7 +26,7 @@ import retrofit2.http.Query;
 
 public interface LastFmRestService {
 
-    String BASE_PARAMETERS_ALBUM = "?method=album.getinfo&api_key=fdb3a51437d4281d4d64964d333531d4&format=json";
+    String BASE_PARAMETERS_ALBUM = "?method=album.getinfo&api_key=ec3813b8d1a1f9f87175dfdd3f7d5118&format=json";
     String BASE_PARAMETERS_ARTIST = "?method=artist.getinfo&api_key=fdb3a51437d4281d4d64964d333531d4&format=json";
 
     @Headers("Cache-Control: public")

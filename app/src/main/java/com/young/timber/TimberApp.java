@@ -29,7 +29,6 @@ public class TimberApp extends MultiDexApplication {
         ImageLoaderConfiguration localImageLoaderConfiguration = new ImageLoaderConfiguration.Builder(this)
                 .imageDownloader(new BaseImageDownloader(this) {
                     PreferencesUtility pref = PreferencesUtility.getInstance(TimberApp.this);
-
                     @Override
                     protected InputStream getStreamFromNetwork(String imageUri, Object extra) throws IOException {
                         if (pref.loadArtistAndAlbumImages()) {

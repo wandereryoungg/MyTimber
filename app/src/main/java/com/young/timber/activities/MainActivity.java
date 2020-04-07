@@ -101,6 +101,7 @@ public class MainActivity extends BaseActivity {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.hide(getSupportFragmentManager().findFragmentById(R.id.fragment_container));
             transaction.replace(R.id.fragment_container, fragment);
+
         }
     };
     //TODO 专辑,艺术家和歌词详情Fragment

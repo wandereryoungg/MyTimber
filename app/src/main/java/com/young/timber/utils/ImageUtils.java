@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -60,29 +61,38 @@ public class ImageUtils {
         LastFmClient.getInstance(albumArt.getContext()).getAlbumInfo(new AlbumQuery(album.title, album.artistName), new AlbumInfoListener() {
             @Override
             public void albumInfoSuccess(LastfmAlbum album) {
-                Log.e("young","album==null"+album);
+                Log.e("young", "album==null    " + (album == null));
                 if (album != null) {
-                    ImageLoader.getInstance().displayImage(album.getmArtwork().get(4).mUrl, albumArt, lastfmDisplayImageOptions, new ImageLoadingListener() {
+                    Log.e("young", album.getmArtwork().get(4).mUrl);
+                    //Glide.with(albumArt.getContext()).load("http://y.gtimg.cn/music/photo_new/T002R180x180M000003c616O2Zlswm.jpg").into(albumArt);
+
+                    ImageLoader.getInstance().displayImage(album.getmArtwork().get(4).getmUrl(), albumArt, lastfmDisplayImageOptions, new ImageLoadingListener() {
                         @Override
                         public void onLoadingStarted(String imageUri, View view) {
                             listener.onLoadingStarted(imageUri, view);
+                            Log.e("young", "onLoadingStarted");
                         }
 
                         @Override
                         public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
                             listener.onLoadingFailed(imageUri, view, failReason);
+                            Log.e("young", "onLoadingFailed");
                         }
 
                         @Override
                         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                             listener.onLoadingComplete(imageUri, view, loadedImage);
+                            Log.e("young", "onLoadingComplete");
                         }
 
                         @Override
                         public void onLoadingCancelled(String imageUri, View view) {
                             listener.onLoadingCancelled(imageUri, view);
+                            Log.e("young", "onLoadingCancelled");
                         }
                     });
+
+
                 }
             }
 

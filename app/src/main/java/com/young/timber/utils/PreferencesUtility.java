@@ -182,8 +182,8 @@ public final class PreferencesUtility {
                     NetworkInfo info = connManager.getActiveNetworkInfo();
                     return info != null && info.getType() == ConnectivityManager.TYPE_WIFI;
                 }
-                return true;
             }
+            return true;
         }
         return false;
     }
